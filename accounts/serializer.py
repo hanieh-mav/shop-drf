@@ -14,7 +14,8 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
-        fields = ['first_name','last_name','email','phone','ostan','zipcode','address']
+        fields = ['first_name','last_name','email','phone','ostan','zipcode','address','password']
+
 
     #check password not weak
     def validate_password(self, password):
@@ -23,3 +24,19 @@ class RegisterSerializer(serializers.ModelSerializer):
         if not any (ch.isalpha() for ch in password):
             raise exceptions.ValidationError('Password must have alphabet') 
         return password
+
+
+    #check email not exist
+    def validate_email(self, email):
+        user = get_user_model().objects.filter(email=email)
+        if user:
+            raise exceptions.ValidationError('Email used before')
+        return email
+
+
+    #check phone not exist
+    def validate_phone(self, phone):
+        user = get_user_model().objects.filter(phone=phone)
+        if user:
+            raise exceptions.ValidationError('phone used before')
+        return phone

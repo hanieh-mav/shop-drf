@@ -14,40 +14,38 @@ from .utilities import send_email_confirm
 # Create your views here.
 
 
+# Register with email confirmation.
 class Register(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     def post(self, request):
-        try:
-            serialized_data = self.serializer_class(data=request.data)  
-            # Return a 400 response if the data was invalid.
-            if serialized_data.is_valid(raise_exception=True):
-                email = serialized_data.data['email']
-                phone = serialized_data.data['phone']
-                user = get_user_model().objects.get(email=email)
-                if user and user.email_confirmed:
-                    raise exceptions.ErrorDetail('This email is registered before.',code=1)
-                elif phone:
-                    raise exceptions.ErrorDetail('This phone is registered before.',code=1)
-                else:
-                    user.is_active = False
-                    user.save()
-                    send_email_confirm(user,request)
-                    return response.Response({'message':'check email'},status=status.HTTP_200_OK)
-        except exceptions.ValidationError as error:
-            return response.Response(error.detail,status=error.status_code)
+        serialized_data = self.serializer_class(data=request.data) 
+
+        # Return a 400 response if the data was invalid.
+        if serialized_data.is_valid(raise_exception=True):
+            data = serialized_data.validated_data
+            user = get_user_model().objects.create_user(email=data['email'],first_name=data['first_name']
+            ,last_name=data['last_name'],phone=data['phone'],zipcode=data['zipcode'],ostan=data['ostan'],address=data['address']
+            ,password=data['password'])
+            user.is_active = False
+            user.save()
+            send_email_confirm(user,request)
+            return response.Response({'message':'check email'},status=status.HTTP_200_OK)
 
 
+
+# Activae accounts if click on link on email.
 class ActivateAccount(views.APIView):
     def get(self, request, uidb64, token,):
         try:
             uid = force_text(urlsafe_base64_decode(uidb64))
-            user = User.objects.get(pk=uid)
+            user = get_user_model().objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             user = None
         if user is not None and account_activation_token.check_token(user, token):
             user.is_active = True
-            user.profile.email_confirmed = True
+            user.email_confirmed = True
             user.save()
             return response.Response(status=status.HTTP_201_CREATED)
         else:
             return response.Response(status=status.HTTP_400_BAD_REQUEST)
+
