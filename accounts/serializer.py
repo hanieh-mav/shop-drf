@@ -1,12 +1,13 @@
+from django.db.models import fields
 from rest_framework import serializers , exceptions, validators
 from django.core.validators import RegexValidator
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, models
 
 
 phone_regex = RegexValidator(regex=r'^\d{10}$',message='Phone number must be entered in the format:''9137866088')
 
 
-#registerserializer
+#Register Serializer
 class RegisterSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length=50, min_length=5)
     password = serializers.CharField(min_length=8, max_length=30)
@@ -40,3 +41,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         if user:
             raise exceptions.ValidationError('phone used before')
         return phone
+
+
+#Login Serializer
+class LoginWithEmail(serializers.Serializer):
+    email = serializers.EmailField(max_length=50, min_length=5)
+    password = serializers.CharField(min_length=8, max_length=30)
+
+
+    
