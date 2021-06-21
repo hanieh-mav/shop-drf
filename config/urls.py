@@ -8,5 +8,6 @@ from django.conf import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include('shop.urls')),
+    path('comment/',include('comment.urls')),
     path('account/',include('accounts.urls')),
 ]+ static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

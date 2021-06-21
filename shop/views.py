@@ -1,5 +1,5 @@
 from rest_framework import generics , response
-from .serializer import ProductSerializer , CategoryListSerializer
+from .serializer import ProductSerializer , CategoryListSerializer , ProductDetailSerializer
 from .models import Product , Category
 from django.shortcuts import get_object_or_404
 
@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404
 #todo : fix category problem
 class ProductList(generics.ListAPIView):
 
-    """ show list products """
+    """ show list products  """
 
     queryset = Product.active.all()
     serializer_class = ProductSerializer
@@ -37,10 +37,10 @@ class CategoryProductList(generics.ListAPIView):
 
 class ProductRetrive(generics.RetrieveAPIView):
 
-    """ show detail of product"""
+    """ show detail of product and comment of product and related product """
 
     queryset = Product.active.all()
-    serializer_class = ProductSerializer
+    serializer_class = ProductDetailSerializer
 
 
 class RelatedProduct(generics.ListAPIView):
