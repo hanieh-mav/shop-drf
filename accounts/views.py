@@ -1,7 +1,7 @@
 from django.core.mail import message
-from rest_framework import generics , exceptions , response ,status , views
+from rest_framework import generics , exceptions , response ,status , views , permissions
 from rest_framework.utils import serializer_helpers
-from .serializer import RegisterSerializer , LoginWithEmail
+from .serializer import RegisterSerializer , LoginWithEmail , ChangePasswordSerializer
 from django.contrib.auth import get_user_model, tokens
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
@@ -15,6 +15,9 @@ from rest_framework.authtoken.views import ObtainAuthToken
 
 # Register with email confirmation.
 class Register(generics.CreateAPIView):
+
+    """ Register and send email confirmation """
+
     serializer_class = RegisterSerializer
     def post(self, request):
         serialized_data = self.serializer_class(data=request.data) 
@@ -70,5 +73,44 @@ class Login(ObtainAuthToken):
                 return response.Response({"message":"password not correct"},status=status.HTTP_400_BAD_REQUEST)
 
             return response.Response({'token':token.key},status=status.HTTP_200_OK)
-           
+
+
+
+# Logout
+class Logout(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self,request):
+        request.auth.delete()
+        return response.Response({'message':"Token Revoken"},status=status.HTTP_200_OK)       
+
+
+class ChangePassword(generics.CreateAPIView):
+
+    """ Change password and create new token """
+
+    serializer_class = ChangePasswordSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer_data = self.serializer_class(data=request.data)
+
+        # Return a 400 response if the data was invalid.
+        if serializer_data.is_valid(raise_exception=True):
+            data = serializer_data.validated_data
+            user = request.user
+
+            if user.check_password(data['old_password']):
+                if user.is_active:
+                    user.set_password(data['new_password'])
+                    user.save()
+                    token =  Token.objects.get(user=user)
+                    token.delete()
+                    token = Token.objects.create(user=user)
+                    token.save()
+                    return response.Response(status=status.HTTP_200_OK)
+                else:
+                    raise exceptions.ValidationError("You are not active")
+            else:
+                raise exceptions.ValidationError('Old password is invalid')
 

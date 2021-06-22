@@ -49,4 +49,15 @@ class LoginWithEmail(serializers.Serializer):
     password = serializers.CharField(min_length=8, max_length=30)
 
 
-    
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(min_length=8, max_length=30)
+    new_password = serializers.CharField(min_length=8, max_length=30)
+
+
+    #check password not weak
+    def validate_new_password(self, new_password):
+        if not any (ch.isdigit() for ch in new_password):
+            raise exceptions.ValidationError('Password must have numbers')
+        if not any (ch.isalpha() for ch in new_password):
+            raise exceptions.ValidationError('Password must have alphabet') 
+        return new_password
