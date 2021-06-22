@@ -1,14 +1,17 @@
 import comment
-from rest_framework import generics , response
+from rest_framework import generics , permissions , response , status ,exceptions
 from .serializer import CommentSerializer
 from .models import Comment
 from shop.models import Product
 from django.shortcuts import get_object_or_404
 
-# Create your views here.
 
 class CommentListAdd(generics.ListCreateAPIView):
+
+    """ show list of product comment , add comment if authenticated """
+
     serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
         product = Product.active.get(pk=self.kwargs['pk'])
@@ -20,4 +23,59 @@ class CommentListAdd(generics.ListCreateAPIView):
         user = self.request.user
         product = Product.active.get( pk = self.kwargs['pk'] )
         serializer.save( user = user , product = product )
+
+
+#todo: shopadmin and superuser can delete too
+class CommentDelete(generics.RetrieveDestroyAPIView):
+
+    """ Delete comment of product only user of that comment can delete """
+
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+
+    def delete(self,request,*args,**kwargs):
+        user = request.user
+        comment = Comment.objects.get(pk = kwargs['pk'])
+        if comment.user == user:
+            return self.destroy(request,*args,**kwargs)
+        else:
+            raise exceptions.ValidationError("this isn't your comment to delete:)")
+
+
+class ReplyAdd(generics.CreateAPIView):
+
+    """ add reply to comment """
+
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+    def perform_create(self,serializer):
+        user = self.request.user
+        product = get_object_or_404( Product , pk = self.kwargs['pk_post'] )
+        comment = get_object_or_404 ( Comment , pk = self.kwargs['pk_comment'] )
+        serializer.save( user = user , product = product , reply = comment , is_reply = True)
+        
+
+#todo: shopadmin and superuser can delete too
+class ReplyDelete(generics.RetrieveDestroyAPIView):
+
+    """ Delete reply  only user of that reply can delete """
+
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+
+    def delete(self,request,*args,**kwargs):
+        user = request.user
+        reply = Comment.objects.get(pk = kwargs['pk'])
+        if reply.user == user:
+            return self.destroy(request,*args,**kwargs)
+        else:
+            raise exceptions.ValidationError("this isn't your reply to delete:)")
+
+
 

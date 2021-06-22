@@ -8,7 +8,7 @@ from .models import Comment
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ('user','body','product','reply','is_reply','created')
+        fields = ('id','user','body','product','reply','is_reply','created')
         extra_kwargs = {
             'user':{
                 'read_only':True

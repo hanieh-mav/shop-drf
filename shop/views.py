@@ -37,7 +37,7 @@ class CategoryProductList(generics.ListAPIView):
 
 class ProductRetrive(generics.RetrieveAPIView):
 
-    """ show detail of product and comment of product and related product """
+    """ show detail of product , comment of product and add comment , related product """
 
     queryset = Product.active.all()
     serializer_class = ProductDetailSerializer
