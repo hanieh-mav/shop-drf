@@ -75,7 +75,6 @@ class Login(ObtainAuthToken):
             return response.Response({'token':token.key},status=status.HTTP_200_OK)
 
 
-
 # Logout
 class Logout(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -85,6 +84,7 @@ class Logout(views.APIView):
         return response.Response({'message':"Token Revoken"},status=status.HTTP_200_OK)       
 
 
+# Change Password
 class ChangePassword(generics.CreateAPIView):
 
     """ Change password and create new token """
