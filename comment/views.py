@@ -26,15 +26,13 @@ class CommentListAdd(generics.ListCreateAPIView):
         serializer.save( user = user , product = product )
 
 
-
 class CommentDelete(generics.RetrieveDestroyAPIView):
 
-    """ Delete comment of product only user of that comment can delete """
+    """ Delete comment of product only user of that comment can delete , and shopadmin and superuser can too """
 
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsAuthorOrReadOnly]
-
 
 
 class ReplyAdd(generics.CreateAPIView):
@@ -54,7 +52,7 @@ class ReplyAdd(generics.CreateAPIView):
 
 class ReplyDelete(generics.RetrieveDestroyAPIView):
 
-    """ Delete reply  only user of that reply can delete """
+    """ Delete reply  only user of that reply can delete , and shopadmin and superuser can too """
 
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
