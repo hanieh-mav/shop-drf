@@ -45,7 +45,7 @@ class ReplyAdd(generics.CreateAPIView):
 
     def perform_create(self,serializer):
         user = self.request.user
-        product = get_object_or_404( Product , pk = self.kwargs['pk_post'] )
+        product = get_object_or_404( Product , pk = self.kwargs['pk_product'] )
         comment = get_object_or_404 ( Comment , pk = self.kwargs['pk_comment'] )
         serializer.save( user = user , product = product , reply = comment , is_reply = True)
         
